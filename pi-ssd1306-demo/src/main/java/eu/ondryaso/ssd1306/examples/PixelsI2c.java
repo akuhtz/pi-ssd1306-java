@@ -1,17 +1,19 @@
 package eu.ondryaso.ssd1306.examples;
 
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.RaspiPin;
-import com.pi4j.io.spi.SpiChannel;
-import com.pi4j.io.spi.SpiFactory;
-import eu.ondryaso.ssd1306.Display;
-
 import java.io.IOException;
 
-public class Pixels {
-    public static void main(String[] args) throws IOException {
+import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.i2c.I2CBus;
+import com.pi4j.io.i2c.I2CFactory;
+import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
+
+import eu.ondryaso.ssd1306.Display;
+
+public class PixelsI2c {
+    public static void main(String[] args) throws IOException, UnsupportedBusNumberException {
         Display disp = new Display(128, 64, GpioFactory.getInstance(),
-                SpiFactory.getInstance(SpiChannel.CS1, 8000000), RaspiPin.GPIO_03, RaspiPin.GPIO_04);
+                I2CFactory.getInstance(I2CBus.BUS_1), 0x3c, null);
+        // Create 128x64 display I2C bus 1 address 3C hex
 
         disp.begin();
 

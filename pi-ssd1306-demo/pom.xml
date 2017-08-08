@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.bidib.eu.ondryaso</groupId>
+		<artifactId>ssd1306-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>ssd1306-demo</artifactId>
+	<packaging>jar</packaging>
+	<name>SSD1306 :: Demo</name>
+	<description>SSD1306 :: Demo POM</description>
+    
+    <properties>
+		<!-- DEFAULT SETTINGS FOR REMOTELY BUILDING NATIVE LIBRARY ON A REMOTE 
+			PLATFORM -->
+		<pi4j.default.host>192.168.1.100</pi4j.default.host>
+		<pi4j.default.port>22</pi4j.default.port>
+		<pi4j.default.user>pi</pi4j.default.user>
+		<pi4j.default.password>raspberry</pi4j.default.password>
+		<pi4j.default.directory>pi4j-temp</pi4j.default.directory>
+
+		<!-- SETTINGS FOR COPYING Pi4J ARTIFACTS TO DEVELOPMENT DEVICE/PLATFORM -->
+		<pi4j.dev.transfer>false</pi4j.dev.transfer>
+		<pi4j.dev.host>${pi4j.default.host}</pi4j.dev.host>
+		<pi4j.dev.port>${pi4j.default.port}</pi4j.dev.port>
+		<pi4j.dev.user>${pi4j.default.user}</pi4j.dev.user>
+		<pi4j.dev.password>${pi4j.default.password}</pi4j.dev.password>
+		<pi4j.dev.directory>pi4j-dev</pi4j.dev.directory>
+
+		<!-- DEFAULT Pi4J BUILD PROPERTIES FOR THE 'RaspberryPi' PLATFORM -->
+		<raspberrypi.build>false</raspberrypi.build>
+		<raspberrypi.platform>raspberrypi</raspberrypi.platform>
+		<raspberrypi.name>RaspberryPi</raspberrypi.name>
+		<raspberrypi.host>${pi4j.default.host}</raspberrypi.host>
+		<raspberrypi.port>${pi4j.default.port}</raspberrypi.port>
+		<raspberrypi.user>${pi4j.default.user}</raspberrypi.user>
+		<raspberrypi.password>${pi4j.default.password}</raspberrypi.password>
+		<raspberrypi.directory>${pi4j.default.directory}</raspberrypi.directory>
+    </properties>
+    
+	<dependencies>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
+		<dependency>
+            <groupId>org.bidib.eu.ondryaso</groupId>
+            <artifactId>ssd1306-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<includePom>true</includePom>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>eu.ondryaso.ssd1306.examples.Pixels</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>eu.ondryaso.ssd1306.examples.Pixels</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+            
+			<!-- OPTIONALLY DEPLOY THE FINAL JAR TO THE RASPBERRY PI -->
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+
+					<!-- copy the compiled JAR file to the Raspberry Pi platform platform -->
+					<execution>
+						<id>transfer-compiled-pi4j-example-jar</id>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties"
+									classpathref="maven.plugin.classpath" />
+								<if>
+									<equals arg1="${pi4j.dev.transfer}" arg2="true" />
+									<then>
+
+										<!-- ensure the target directory exists on the Raspberry Pi -->
+										<sshexec host="${pi4j.dev.host}" port="${pi4j.dev.port}"
+											username="${pi4j.dev.user}" password="${pi4j.dev.password}"
+											trust="true" failonerror="false" verbose="true"
+											command="mkdir --parents ${pi4j.dev.directory}" />
+
+										<!-- copy the JAR file to the Raspberry Pi -->
+										<scp
+											file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar"
+											todir="${pi4j.dev.user}:${pi4j.dev.password}@${pi4j.dev.host}:${pi4j.dev.directory}"
+											port="${pi4j.dev.port}" trust="true" verbose="true"
+											failonerror="true">
+										</scp>
+
+										<!-- copy the example source files to the Raspberry Pi -->
+										<scp
+											todir="${pi4j.dev.user}:${pi4j.dev.password}@${pi4j.dev.host}:${pi4j.dev.directory}"
+											port="${pi4j.dev.port}" trust="true" verbose="true"
+											failonerror="true">
+											<fileset dir="src/main/java" />
+										</scp>
+									</then>
+								</if>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.ant</groupId>
+						<artifactId>ant-jsch</artifactId>
+						<version>${ant-jsch.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>com.jcraft</groupId>
+						<artifactId>jsch</artifactId>
+						<version>${jsch.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>ant-contrib</groupId>
+						<artifactId>ant-contrib</artifactId>
+						<version>${ant-contrib.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+        </plugins>
+	</build>
+</project>
