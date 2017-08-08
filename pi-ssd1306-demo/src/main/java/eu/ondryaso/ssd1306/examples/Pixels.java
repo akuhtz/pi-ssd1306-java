@@ -10,6 +10,7 @@ import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.spi.SpiChannel;
 import com.pi4j.io.spi.SpiFactory;
 
+import eu.ondryaso.ssd1306.Constants;
 import eu.ondryaso.ssd1306.Display;
 
 public class Pixels {
@@ -28,7 +29,8 @@ public class Pixels {
         // GND : GND
 
         LOGGER.info("Create display.");
-        Display disp = new Display(128, 64, GpioFactory.getInstance(),
+        Display disp =
+            new Display(Constants.LCD_WIDTH_128, Constants.LCD_HEIGHT_64, GpioFactory.getInstance(),
                 SpiFactory.getInstance(SpiChannel.CS0, 8000000), RaspiPin.GPIO_03, RaspiPin.GPIO_04);
 
         LOGGER.info("Begin display.");
@@ -48,6 +50,6 @@ public class Pixels {
             }
         }
 
-        System.out.println("Display lasts " + ((nano / 1000000) / (64 * 64)) + " ms");
+        LOGGER.info("Display lasts " + ((nano / 1000000) / (64 * 64)) + " ms");
     }
 }

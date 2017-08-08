@@ -1,18 +1,24 @@
 package eu.ondryaso.ssd1306.examples;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Image;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.spi.SpiChannel;
 import com.pi4j.io.spi.SpiFactory;
-import eu.ondryaso.ssd1306.Display;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.IOException;
+import eu.ondryaso.ssd1306.Constants;
+import eu.ondryaso.ssd1306.Display;
 
 public class BasicGraphics {
     public static void main(String[] args) throws IOException {
-        Display disp = new Display(128, 64, GpioFactory.getInstance(),
+        Display disp =
+            new Display(Constants.LCD_WIDTH_128, Constants.LCD_HEIGHT_64, GpioFactory.getInstance(),
                 SpiFactory.getInstance(SpiChannel.CS1, 8000000), RaspiPin.GPIO_04);
         // Create 128x64 display on CE1 (change to SpiChannel.CS0 for using CE0) with D/C pin on WiringPi pin 04
 

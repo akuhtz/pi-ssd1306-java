@@ -1,5 +1,6 @@
 package eu.ondryaso.ssd1306;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -23,6 +24,7 @@ public class Display {
     private GpioPinDigitalOutput rstPin, dcPin;
     private I2CDevice i2c;
     private SpiDevice spi;
+
     private byte[] buffer;
 
     /**
@@ -115,15 +117,19 @@ public class Display {
         this.graphics = this.img.createGraphics();
     }
 
-    private void initDisplay() {
-        if (this.width == 128 && this.height == 64) {
+    private void initDisplay() throws IOException {
+        if (this.width == Constants.LCD_WIDTH_128 && this.height == Constants.LCD_HEIGHT_64) {
             this.init(0x3F, 0x12, 0x80);
-        } else if (this.width == 128 && this.height == 32) {
+        }
+        else if (this.width == Constants.LCD_WIDTH_128 && this.height == Constants.LCD_HEIGHT_32) {
             this.init(0x1F, 0x02, 0x80);
-        } else if (this.width == 96 && this.height == 16) {
+        }
+        else if (this.width == Constants.LCD_WIDTH_96 && this.height == Constants.LCD_HEIGHT_16) {
             this.init(0x0F, 0x02, 0x60);
         }
-
+        else {
+            throw new IOException("Invalid width: " + this.width + " or height: " + this.height);
+        }
     }
 
     private void init(int multiplex, int compins, int ratio) {
@@ -226,19 +232,24 @@ public class Display {
 
     /**
      * Begin with SWITCHCAPVCC VCC mode
+     * 
+     * @throws IOException
      * @see Constants#SSD1306_SWITCHCAPVCC
      */
-    public void begin() {
+    public void begin() throws IOException {
         this.begin(Constants.SSD1306_SWITCHCAPVCC);
     }
 
     /**
      * Begin with specified VCC mode (can be SWITCHCAPVCC or EXTERNALVCC)
-     * @param vccState VCC mode
+     * 
+     * @param vccState
+     *            VCC mode
+     * @throws IOException
      * @see Constants#SSD1306_SWITCHCAPVCC
      * @see Constants#SSD1306_EXTERNALVCC
      */
-    public void begin(int vccState) {
+    public void begin(int vccState) throws IOException {
         this.vccState = vccState;
         this.reset();
         this.initDisplay();
@@ -443,6 +454,14 @@ public class Display {
     }
 
     /**
+     * Clear the image.
+     */
+    public void clearImage() {
+        this.graphics.setBackground(new Color(0, 0, 0, 0));
+        this.graphics.clearRect(0, 0, img.getWidth(), img.getHeight());
+    }
+
+    /**
      * Returns internal AWT image
      * @return BufferedImage
      */
@@ -457,6 +476,33 @@ public class Display {
      */
     public Graphics2D getGraphics() {
         return this.graphics;
+    }
+
+    /**
+     * Clears the screen and displays the string sent in, adding new lines as needed.
+     * 
+     * @param data
+     *            the data to display
+     */
+    public void displayString(String... data) {
+        clearImage();
+        for (int i = 0; i < data.length; i++) {
+            graphics.drawString(data[i], 0, Constants.STRING_HEIGHT * (i + 1));
+        }
+        displayImage();
+    }
+
+    /**
+     * Draw a horizontal line.
+     * 
+     * @param position
+     *            the y position
+     */
+    public void horizontalLine(int position) {
+        for (int i = 0; i < width; i++) {
+            setPixel(i, position, true);
+        }
+        display();
     }
 
     private void i2cWrite(int register, int value) {

@@ -35,4 +35,16 @@ public class Constants {
     public static final short SSD1306_LEFT_HORIZONTAL_SCROLL = 0x27;
     public static final short SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29;
     public static final short SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A;
+
+    public static final int LCD_WIDTH_128 = 128;
+
+    public static final int LCD_WIDTH_96 = 96;
+
+    public static final int LCD_HEIGHT_64 = 64;
+
+    public static final int LCD_HEIGHT_32 = 32;
+
+    public static final int LCD_HEIGHT_16 = 16;
+
+    public final static int STRING_HEIGHT = 16;
 }
