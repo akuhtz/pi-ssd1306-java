@@ -15,6 +15,8 @@ import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.spi.SpiChannel;
 import com.pi4j.io.spi.SpiDevice;
 
+import eu.ondryaso.ssd1306.Constants.ScrollSpeed;
+
 public class Display {
     protected int vccState;
     protected BufferedImage img;
@@ -336,11 +338,11 @@ public class Display {
     /**
      * Probably broken
      */
-    public void scrollHorizontally(boolean left, int start, int end) {
+    public void scrollHorizontally(boolean left, int start, int end, ScrollSpeed speed) {
         this.command(left ? Constants.SSD1306_LEFT_HORIZONTAL_SCROLL : Constants.SSD1306_RIGHT_HORIZONTAL_SCROLL);
         this.command(0);
         this.command(start);
-        this.command(0);
+        this.command(speed.getValue()); // Set time interval between each scroll step in terms of frame frequency
         this.command(end);
         this.command(1);
         this.command(0xFF);

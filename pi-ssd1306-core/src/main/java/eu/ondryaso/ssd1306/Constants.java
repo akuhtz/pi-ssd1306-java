@@ -36,6 +36,20 @@ public class Constants {
     public static final short SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29;
     public static final short SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A;
 
+    public enum ScrollSpeed {
+        SPEED_5_FRAMES(0x00), SPEED_64_FRAMES(0x01), SPEED_128_FRAMES(0x02), SPEED_256_FRAMES(0x03), SPEED_3_FRAMES(
+            0x04), SPEED_4_FRAMES(0x05), SPEED_25_FRAMES(0x06), SPEED_2_FRAMES(0x07);
+        private int value;
+
+        private ScrollSpeed(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
     public static final int LCD_WIDTH_128 = 128;
 
     public static final int LCD_WIDTH_96 = 96;
