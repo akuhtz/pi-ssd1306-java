@@ -29,15 +29,6 @@
 		<pi4j.dev.password>${pi4j.default.password}</pi4j.dev.password>
 		<pi4j.dev.directory>pi4j-dev</pi4j.dev.directory>
 
-		<!-- DEFAULT Pi4J BUILD PROPERTIES FOR THE 'RaspberryPi' PLATFORM -->
-		<raspberrypi.build>false</raspberrypi.build>
-		<raspberrypi.platform>raspberrypi</raspberrypi.platform>
-		<raspberrypi.name>RaspberryPi</raspberrypi.name>
-		<raspberrypi.host>${pi4j.default.host}</raspberrypi.host>
-		<raspberrypi.port>${pi4j.default.port}</raspberrypi.port>
-		<raspberrypi.user>${pi4j.default.user}</raspberrypi.user>
-		<raspberrypi.password>${pi4j.default.password}</raspberrypi.password>
-		<raspberrypi.directory>${pi4j.default.directory}</raspberrypi.directory>
     </properties>
     
 	<dependencies>
@@ -79,40 +70,73 @@
 				</executions>
 			</plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>eu.ondryaso.ssd1306.examples.Pixels</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>eu.ondryaso.ssd1306.examples.Pixels</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
+                <groupId>com.soebes.maven.plugins</groupId>
+                <artifactId>iterator-maven-plugin</artifactId>
+                <version>0.5.1</version>
 				<executions>
-					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
-						<goals>
-							<goal>single</goal>
-						</goals>
+          			<execution>
+			            <phase>package</phase>
+			            <goals>
+			              <goal>iterator</goal>
+			            </goals>
+						<configuration>
+							<items>
+				                <item>Pixels</item>
+				                <item>PixelsI2c</item>
+				                <item>Pong</item>
+							</items>
+							<pluginExecutors>
+								<pluginExecutor>							
+						            <plugin>
+						                <groupId>org.apache.maven.plugins</groupId>
+						                <artifactId>maven-jar-plugin</artifactId>
+						            </plugin>
+						            <goal>jar</goal>
+					                <configuration>
+					                	
+					                    <archive>
+					                        <manifest>
+					                            <addClasspath>true</addClasspath>
+					                            <mainClass>eu.ondryaso.ssd1306.examples.@item@</mainClass>
+					                        </manifest>
+					                    </archive>
+					                    
+					                    <classifier>@item@</classifier>
+					                </configuration>
+						        </pluginExecutor>
+            					<pluginExecutor>
+									<plugin>
+										<artifactId>maven-assembly-plugin</artifactId>
+						            </plugin>
+						            <goal>single</goal>
+									<configuration>
+										<archive>
+											<manifest>
+												<mainClass>eu.ondryaso.ssd1306.examples.@item@</mainClass>
+											</manifest>
+										</archive>
+										<descriptorRefs>
+											<descriptorRef>jar-with-dependencies</descriptorRef>
+										</descriptorRefs>
+										<finalName>${project.artifactId}-${project.version}-@item@</finalName>
+									</configuration>
+									<!-- 
+									<executions>
+										<execution>
+											<id>make-assembly</id> 
+											<phase>package</phase> 
+											<goals>
+												<goal>single</goal>
+											</goals>
+										</execution>
+									</executions>
+									-->
+						        </pluginExecutor>
+							</pluginExecutors>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-            
 			<!-- OPTIONALLY DEPLOY THE FINAL JAR TO THE RASPBERRY PI -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -139,21 +163,16 @@
 											trust="true" failonerror="false" verbose="true"
 											command="mkdir --parents ${pi4j.dev.directory}" />
 
-										<!-- copy the JAR file to the Raspberry Pi -->
+										<!-- copy the JAR files to the Raspberry Pi -->
 										<scp
-											file="${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar"
 											todir="${pi4j.dev.user}:${pi4j.dev.password}@${pi4j.dev.host}:${pi4j.dev.directory}"
 											port="${pi4j.dev.port}" trust="true" verbose="true"
 											failonerror="true">
+											<fileset dir="${project.build.directory}">
+										      	<include name="**/*-jar-with-dependencies.jar"/>
+										    </fileset>
 										</scp>
 
-										<!-- copy the example source files to the Raspberry Pi -->
-										<scp
-											todir="${pi4j.dev.user}:${pi4j.dev.password}@${pi4j.dev.host}:${pi4j.dev.directory}"
-											port="${pi4j.dev.port}" trust="true" verbose="true"
-											failonerror="true">
-											<fileset dir="src/main/java" />
-										</scp>
 									</then>
 								</if>
 							</target>

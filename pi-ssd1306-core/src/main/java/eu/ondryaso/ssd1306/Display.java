@@ -494,6 +494,12 @@ public class Display {
         displayImage();
     }
 
+    public int checkStringWidth(String data) {
+        int stringWidth = graphics.getFontMetrics().stringWidth(data);
+
+        return stringWidth;
+    }
+
     /**
      * Draw a horizontal line.
      * 
